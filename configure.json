@@ -1,0 +1,23 @@
+[
+  {
+    "name": "amf",
+    "remote": "192.168.2.63",
+    "port": "22",
+    "username": "oai",
+    "password": "123"
+  },
+  {
+    "name": "gnb",
+    "remote": "192.168.2.128",
+    "port": "22",
+    "username": "witcomm",
+    "password": "1"
+  },
+  {
+    "name": "upf",
+    "remote": "192.168.2.135",
+    "port": "22",
+    "username": "witcomm",
+    "password": "1"
+  }
+]

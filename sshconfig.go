@@ -26,12 +26,8 @@ THE SOFTWARE.
 package main
 
 import (
-	"bufio"
 	"log"
-	"os"
 	"path"
-	"strconv"
-	"strings"
 )
 
 type Section struct {
@@ -92,57 +88,32 @@ func getSshEntry(name string) (host string, port int, user, keyfile string) {
 	return def.Hostname, def.Port, def.User, def.IdentityFile
 }
 
-func parseSshConfig(path string) bool {
-	f, err := os.Open(path)
-	if err != nil {
-		log.Printf("warning: %v", err)
+func parseSshConfig(config []map[string]interface{}) bool {
+	if len(config) < 1 {
+		log.Println("No relevant configuration information")
 		return false
 	}
-	defer f.Close()
-	update := func(cb func(s *Section)) {}
-	s := bufio.NewScanner(f)
-	for s.Scan() {
-		line := strings.TrimSpace(s.Text())
-		if len(line) == 0 || line[0] == '#' {
-			continue
+	for i := 0; i < len(config); i++ {
+		c := config[i]
+		if _, ok := c["name"]; !ok {
+			log.Println("The name field in the configuration file is missing")
+
+			return false
 		}
-		parts := strings.Fields(line)
-		if len(parts) > 1 && strings.ToLower(parts[0]) == "host" {
-			hosts := parts[1:]
-			for _, h := range hosts {
-				if _, ok := HostInfo[h]; !ok {
-					HostInfo[h] = Section{}
-				}
-			}
-			update = func(cb func(s *Section)) {
-				for _, h := range hosts {
-					s, _ := HostInfo[h]
-					cb(&s)
-					HostInfo[h] = s
-				}
-			}
+		if _, ok := c["remote"]; !ok {
+			log.Println("The remote field in the configuration file is missing")
+
+			return false
 		}
-		if len(parts) == 2 {
-			switch strings.ToLower(parts[0]) {
-			case "hostname":
-				update(func(s *Section) {
-					s.Hostname = parts[1]
-				})
-			case "port":
-				if p, err := strconv.Atoi(parts[1]); err == nil {
-					update(func(s *Section) {
-						s.Port = p
-					})
-				}
-			case "user":
-				update(func(s *Section) {
-					s.User = parts[1]
-				})
-			case "identityfile":
-				update(func(s *Section) {
-					s.IdentityFile = parts[1]
-				})
-			}
+		if _, ok := c["username"]; !ok {
+			log.Println("The username field in the configuration file is missing")
+
+			return false
+		}
+		if _, ok := c["password"]; !ok {
+			log.Println("The password field in the configuration file is missing")
+
+			return false
 		}
 	}
 	return true
